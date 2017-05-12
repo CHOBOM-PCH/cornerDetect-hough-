@@ -47,11 +47,27 @@ void erodeTest(Mat &src, Mat &dst, Mat &kernel)
 		}
 	}
 }
+int detectMeetPoint (int asx, int asy, int aex, int aey, int bsx, int bsy, int bex, int bey, float* mx, float* my)
+{
+	int parallel = ((asx - aex) * (bsy - bey) - (asy - aey) * (bsx - bex));
+	
+	if (parallel == 0)
+		return -1;
+	else {
+	*mx = ((asx * aey - asy * aex) * (bsx - bex) - (asx - aex) * (bsx * bey - bsy * bex)) 
+		/ ((asx - aex) * (bsy - bey) - (asy - aey) * (bsx - bex));
+	
+	*my = ((asx * aey - asy * aex) * (bsy - bey) - (asy - aey) * (bsx * bey - bsy * bex)) 
+		/ ((asx - aex) * (bsy - bey) - (asy - aey) * (bsx - bex));
+	return 1;
+	}
+
+}
 
 
 int main()
 {
-	Mat input_img = imread("image/필름1.PNG");
+	Mat input_img = imread("image/필름3.PNG");
 	Mat gray_img;
 	Mat blur_img;
 	Mat threshOutput_img;
@@ -96,13 +112,13 @@ int main()
 			lineA.push_back(lines[k]);
 		} else {
 			int aa = angleA - angle;
-			if (aa > 1) {
+			if (aa > 10) {
 				if (angleB == 365) {
 					angleB = angle;
 					lineB.push_back(lines[k]);
 				} else {
 					int bb = angleB - angle;
-					if (bb > 1);
+					if (bb > 1);//수정할 수 있음
 					else { 
 						lineB.push_back(lines[k]);
 					}
@@ -137,16 +153,29 @@ int main()
 	double costA = ransac_line_fitting (aDirection, lineA.size() * 2, aLine, 30);
 	double costB = ransac_line_fitting (bDirection, lineB.size() * 2, bLine, 30);
 
-	line(output_img, Point(aLine.sx - 500 * aLine.mx, aLine.sy - 500 * aLine.my), 
-		Point(aLine.sx + 500 * aLine.mx, aLine.sy + 500 * aLine.my), Scalar(0, 0, 255), 2);
-	line(output_img, Point(bLine.sx - 500 * bLine.mx, bLine.sy - 500 * bLine.my),
-		Point(bLine.sx + 500 * bLine.mx, bLine.sy + 500 * bLine.my), Scalar(255, 255, 0), 2);
+	int xsa = aLine.sx - 500 * aLine.mx;
+	int ysa = aLine.sy - 500 * aLine.my;
+	int xea = aLine.sx + 500 * aLine.mx;
+	int yea = aLine.sy + 500 * aLine.my;
+	int xsb = bLine.sx - 500 * bLine.mx;
+	int ysb = bLine.sy - 500 * bLine.my;
+	int xeb = bLine.sx + 500 * bLine.mx;
+	int yeb = bLine.sy + 500 * bLine.my;
+	float meetX, meetY;
+	float angleMeet = fabs(angleA - angleB);
 
+	line(output_img, Point(xsa, ysa), Point(xea, yea), Scalar(0, 0, 255), 2);
+	line(output_img, Point(xsb, ysb), Point(xeb, yeb), Scalar(255, 255, 0), 2);
+
+	detectMeetPoint(xsa, ysa, xea, xea, xsb, ysb, xeb, yeb, &meetX, &meetY);
+	printf("교점 X: %lf, Y: %lf 사이각: %lf \n", meetX, meetY, angleMeet);
+	circle(output_img, Point(meetX, meetY), 5, Scalar(255, 0, 0), 2);
+	
 	delete aDirection;
 	delete bDirection;
 
 
-	imshow("edge", threshOutput_img);
+	imshow("edge", erode2_img);
 	imshow("image",output_img);
 	waitKey(0);
 
