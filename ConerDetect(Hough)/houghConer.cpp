@@ -1,23 +1,4 @@
-#include "opencv2/core/core.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include <vector>
-#include <math.h>
-#include <iostream>
-#include "RANSAC_LineFittingAlgorithm.h"
-
-#ifdef _DEBUG
-        #pragma comment(lib,"opencv_core2413d.lib")
-        #pragma comment(lib,"opencv_highgui2413d.lib")
-        #pragma comment(lib,"opencv_imgproc2413d.lib")
-#else
-        #pragma comment(lib,"opencv_core2413.lib")
-        #pragma comment(lib,"opencv_highgui2413.lib")
-        #pragma comment(lib,"opencv_imgproc2413.lib")
-#endif
-
-#define PI 3.1415926
-using namespace cv;
+#include "houghConer.h"
 
 void erodeTest(Mat &src, Mat &dst, Mat &kernel)
 {
@@ -49,7 +30,7 @@ void erodeTest(Mat &src, Mat &dst, Mat &kernel)
 }
 int detectMeetPoint (int asx, int asy, int aex, int aey, int bsx, int bsy, int bex, int bey, float* mx, float* my)
 {
-	int parallel = ((asx - aex) * (bsy - bey) - (asy - aey) * (bsx - bex));
+	float parallel = ((asx - aex) * (bsy - bey) - (asy - aey) * (bsx - bex));
 	
 	if (parallel == 0)
 		return -1;
@@ -65,9 +46,9 @@ int detectMeetPoint (int asx, int asy, int aex, int aey, int bsx, int bsy, int b
 }
 
 
-int main()
+int houghCornerDetect(const char* route, int* pointX, int* pointY, float* conAngle)//, int* distanceX, int* distanceY, bool viewLine)
 {
-	Mat input_img = imread("image/필름3.PNG");
+	Mat input_img = imread(route);
 	Mat gray_img;
 	Mat blur_img;
 	Mat threshOutput_img;
@@ -129,7 +110,7 @@ int main()
 		}
 					
 				
-		printf("시작점 %d, %d  끝점 %d %d  각도 %lf \n", x1, y1, x2, y2, angle);
+		//printf("시작점 %d, %d  끝점 %d %d  각도 %lf \n", x1, y1, x2, y2, angle);
 	}
 	sPoint *aDirection = new sPoint[lineA.size() * 2];
 	sPoint *bDirection = new sPoint[lineB.size() * 2];
@@ -161,22 +142,26 @@ int main()
 	int ysb = bLine.sy - 500 * bLine.my;
 	int xeb = bLine.sx + 500 * bLine.mx;
 	int yeb = bLine.sy + 500 * bLine.my;
-	float meetX, meetY;
+	float meetX, meetY, meetfX, meetfY;
 	float angleMeet = fabs(angleA - angleB);
+
+	detectMeetPoint(xsa, ysa, xea, yea, xsb, ysb, xeb, yeb, &meetX, &meetY);
 
 	line(output_img, Point(xsa, ysa), Point(xea, yea), Scalar(0, 0, 255), 2);
 	line(output_img, Point(xsb, ysb), Point(xeb, yeb), Scalar(255, 255, 0), 2);
+	circle(output_img, Point(meetX, meetY), 5, Scalar(0, 255, 0), 2);
 
-	detectMeetPoint(xsa, ysa, xea, xea, xsb, ysb, xeb, yeb, &meetX, &meetY);
-	printf("교점 X: %lf, Y: %lf 사이각: %lf \n", meetX, meetY, angleMeet);
-	circle(output_img, Point(meetX, meetY), 5, Scalar(255, 0, 0), 2);
+	*pointX = (int)meetX;
+	*pointY = (int)meetY;
+	*conAngle = angleMeet;
 	
 	delete aDirection;
 	delete bDirection;
 
 
-	imshow("edge", erode2_img);
+	imshow("origin", input_img);
 	imshow("image",output_img);
-	waitKey(0);
+	//waitKey(0);
+	return 1;
 
 }

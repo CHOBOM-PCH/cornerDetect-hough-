@@ -65,7 +65,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="houghConer.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="RANSAC_LineFittingAlgorithm.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="houghConer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
