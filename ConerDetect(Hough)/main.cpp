@@ -2,7 +2,7 @@
 
 int main()
 {
-	const char* k = "image/ÇÊ¸§2.PNG";
+	const char* k = "image/Image1_2.bmp";
 	int cx = 0, cy = 0;
 	int x = 0, y = 0;
 	float angle = 0, dist = 0;

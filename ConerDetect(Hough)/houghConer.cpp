@@ -295,7 +295,11 @@ int houghCornerDetect(const char* route, int* pointCX, int* pointCY, int* pointX
 	getBressenHamLine(Point(axs, ays), Point(axe, aye), linePoint);
 	int kk = 0, kkk = 0, dd = 0;
 	for (int ii = 0; ii < linePoint.size(); ii++) {
-		int fitColor = threshOutput2_img.at<uchar>(linePoint.at(ii));
+		int fitColor = 111;
+		if (linePoint.at(ii).x <= output_img.cols && linePoint.at(ii).y <= output_img.rows && linePoint.at(ii).x >= 0 && linePoint.at(ii).y >= 0)
+			fitColor = threshOutput2_img.at<uchar>(linePoint.at(ii));
+		else
+			break;
 		//std::cout << "»ö»ó°ª" <<linePoint.at(ii).x<<", "<< linePoint.at(ii).y <<" : "<<fitColor<<std::endl;
 		if (fitColor == 255 && dd == 0){
 			kk++;
@@ -350,7 +354,7 @@ int houghCornerDetect(const char* route, int* pointCX, int* pointCY, int* pointX
 	}
 	delete aDirection;
 	delete bDirection;
-	//imshow("origin", input_img);
+	imshow("origin", threshOutput2_img);
 	//imshow("dstImage", output_img);
 	//setMouseCallback("dstImage", onMouse, NULL);// (void *)&output_img);
 	//waitKey(0);
