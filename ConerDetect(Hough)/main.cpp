@@ -2,13 +2,13 @@
 
 int main()
 {
-	const char* k = "image/Image1_2.bmp";
+	const char* k = "image/필름1.PNG";
 	int cx = 0, cy = 0;
 	int x = 0, y = 0;
 	float angle = 0, dist = 0;
 	cv::Mat image;
 
-	int detect = houghCornerDetect(k, &cx, &cy, &x, &y, &angle, &dist, image, 4);
+	int detect = houghCornerDetect(k, &cx, &cy, &x, &y, &angle, &dist, image, 1);
 	if (detect == 1){
 		std::cout<<"찾아낸 포인트 x: "<<cx<<" y: "<<cy<<std::endl;
 		std::cout<<"찾아낸 포인트의 각도 degree: "<<angle<<std::endl;

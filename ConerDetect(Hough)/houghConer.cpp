@@ -30,23 +30,23 @@ void erodeTest(Mat &src, Mat &dst, Mat &kernel)
 		}
 	}
 }
-int detectMeetPoint (int asx, int asy, int aex, int aey, int bsx, int bsy, int bex, int bey, float* mx, float* my)
+int detectMeetPoint (Point aStart, Point aEnd, Point bStart, Point bEnd, float* mx, float* my)
 {
-	float parallel = ((asx - aex) * (bsy - bey) - (asy - aey) * (bsx - bex));
+	float parallel = ((aStart.x - aEnd.x) * (bStart.y - bEnd.y) - (aStart.y - aEnd.y) * (bStart.x - bEnd.x));
 	
 	if (parallel == 0)
 		return -1;
 	else {
-	*mx = ((asx * aey - asy * aex) * (bsx - bex) - (asx - aex) * (bsx * bey - bsy * bex)) 
-		/ ((asx - aex) * (bsy - bey) - (asy - aey) * (bsx - bex));
+	*mx = ((aStart.x * aEnd.y - aStart.y * aEnd.x) * (bStart.x - bEnd.x) - (aStart.x - aEnd.x) * (bStart.x * bEnd.y - bStart.y * bEnd.x)) 
+		/ ((aStart.x - aEnd.x) * (bStart.y - bEnd.y) - (aStart.y - aEnd.y) * (bStart.x - bEnd.x));
 	
-	*my = ((asx * aey - asy * aex) * (bsy - bey) - (asy - aey) * (bsx * bey - bsy * bex)) 
-		/ ((asx - aex) * (bsy - bey) - (asy - aey) * (bsx - bex));
+	*my = ((aStart.x * aEnd.y - aStart.y * aEnd.x) * (bStart.y - bEnd.y) - (aStart.y - aEnd.y) * (bStart.x * bEnd.y - bStart.y * bEnd.x)) 
+		/ ((aStart.x - aEnd.x) * (bStart.y - bEnd.y) - (aStart.y - aEnd.y) * (bStart.x - bEnd.x));
 	return 1;
 	}
 
 }
-void getBressenHamLine(Point p1, Point p2, vector<Point> &kPoint)
+void getBressenHamLine(Point st, Point ed, vector<Point> &kPoint)
 {
 	int dx, dy;
 	int pValue;
@@ -54,66 +54,66 @@ void getBressenHamLine(Point p1, Point p2, vector<Point> &kPoint)
 	int inc2dydx;
 	int incValue;
 	int ndx;
-	dx = abs(p2.x - p1.x);
-	dy = abs(p2.y - p1.y);
+	dx = abs(ed.x - st.x);
+	dy = abs(ed.y - st.y);
 
 	if(dy <= dx) {
 		inc2dy = 2 * dy;
 		inc2dydx = 2 * (dy - dx);
-		if (p2.x < p1.x) {
-			ndx = p1.x;
-			p1.x = p2.x;
-			p2.x = ndx;
+		if (ed.x < st.x) {
+			ndx = st.x;
+			st.x = ed.x;
+			ed.x = ndx;
 
-			ndx = p1.y;
-			p1.y = p2.y;
-			p2.y = ndx;
-		}else if(p1.y < p2.y) {
+			ndx = st.y;
+			st.y = ed.y;
+			ed.y = ndx;
+		}else if(st.y < ed.y) {
 			incValue = 1;
 		}else {
 			incValue = -1;
 		}
-		kPoint.push_back(p1);
+		kPoint.push_back(st);
 
 		pValue = 2 * dy - dx;
-		for (ndx = p1.x; ndx < p2.x; ndx++) {
+		for (ndx = st.x; ndx < ed.x; ndx++) {
 			if (0 > pValue) {
 				pValue += inc2dy;
 			}else {
 				pValue += inc2dydx;
-				p1.y += incValue;
+				st.y += incValue;
 			}
-			kPoint.push_back(Point(ndx, p1.y));
+			kPoint.push_back(Point(ndx, st.y));
 		}
 	}else {
 		inc2dy = 2 * dx;
 		inc2dydx = 2 * (dx - dy);
 
-		if (p2.y < p1.y) {
-			ndx = p1.y;
-			p1.y = p2.y;
-			p2.y = ndx;
+		if (ed.y < st.y) {
+			ndx = st.y;
+			st.y = ed.y;
+			ed.y = ndx;
 
-			ndx = p1.x;
-			p1.x = p2.x;
-			p2.x = ndx;
-		}else if(p1.x < p2.x) {
+			ndx = st.x;
+			st.x = ed.x;
+			ed.x = ndx;
+		}else if(st.x < ed.x) {
 			incValue = 1;
 		}else {
 			incValue = -1;
 		}
-		kPoint.push_back(p1);
+		kPoint.push_back(st);
 		
 		pValue = 2 * dx - dy;
 
-		for (ndx = p1.y; ndx < p2.y; ndx++) {
+		for (ndx = st.y; ndx < ed.y; ndx++) {
 			if (0 > pValue) {
 				pValue += inc2dy;
 			} else {
 				pValue += inc2dydx;
-				p1.x += incValue;
+				st.x += incValue;
 			}
-			kPoint.push_back(Point(p1.x, ndx));
+			kPoint.push_back(Point(st.x, ndx));
 		}
 	}
 }
@@ -253,7 +253,7 @@ int houghCornerDetect(const char* route, int* pointCX, int* pointCY, int* pointX
 	int yeb = bLine.sy + 500 * bLine.my;
 	
 	float meetX, meetY, meetfX, meetfY;
-	detectMeetPoint(xsa, ysa, xea, yea, xsb, ysb, xeb, yeb, &meetX, &meetY);
+	detectMeetPoint(Point(xsa, ysa), Point(xea, yea), Point(xsb, ysb), Point(xeb, yeb), &meetX, &meetY);
 	float angleMeet = fabs(angleA - angleB);
 
 	int axs, axe, ays, aye;
@@ -292,7 +292,8 @@ int houghCornerDetect(const char* route, int* pointCX, int* pointCY, int* pointX
 	
 	vector<Point> linePoint;
 	vector<Point> fitPoint;
-	getBressenHamLine(Point(axs, ays), Point(axe, aye), linePoint);
+	if (axs <= output_img.cols && ays <= output_img.rows && axs >= 0 && ays >= 0 && axe <= output_img.cols && aye <= output_img.rows && axe >= 0 && aye >= 0)
+		getBressenHamLine(Point(axs, ays), Point(axe, aye), linePoint);
 	int kk = 0, kkk = 0, dd = 0;
 	for (int ii = 0; ii < linePoint.size(); ii++) {
 		int fitColor = 111;
@@ -354,7 +355,7 @@ int houghCornerDetect(const char* route, int* pointCX, int* pointCY, int* pointX
 	}
 	delete aDirection;
 	delete bDirection;
-	imshow("origin", threshOutput2_img);
+	//imshow("origin", threshOutput2_img);
 	//imshow("dstImage", output_img);
 	//setMouseCallback("dstImage", onMouse, NULL);// (void *)&output_img);
 	//waitKey(0);
